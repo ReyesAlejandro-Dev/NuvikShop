@@ -9,6 +9,7 @@ from datetime import datetime
 import os
 import requests
 import stripe
+import uuid as uuid_lib
 
 # Cargar variables de entorno
 from dotenv import load_dotenv
@@ -31,15 +32,85 @@ SUPABASE_KEY = os.getenv('SUPABASE_KEY')
 # Plugin
 PLUGIN_SECRET_KEY = os.getenv('PLUGIN_SECRET_KEY', 'cambia-esta-clave')
 
-# Cola de comandos pendientes
-pending_commands = []
-
 # Importar productos desde config.py
 from config import PRODUCTS, SHOP_CONFIG
 
 # ============================================
-# UTILIDADES
+# INTERACCIÓN CON SUPABASE
 # ============================================
+
+def supabase_request(method, endpoint, data=None):
+    """Helper para hacer peticiones a Supabase"""
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        print("[ERROR] Faltan credenciales de Supabase")
+        return None
+        
+    headers = {
+        'apikey': SUPABASE_KEY,
+        'Authorization': f'Bearer {SUPABASE_KEY}',
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+    }
+    
+    url = f"{SUPABASE_URL}/rest/v1/{endpoint}"
+    
+    try:
+        if method == 'GET':
+            resp = requests.get(url, headers=headers, params=data)
+        elif method == 'POST':
+            resp = requests.post(url, headers=headers, json=data)
+        elif method == 'PATCH':
+            resp = requests.patch(url, headers=headers, json=data)
+        elif method == 'DELETE':
+            resp = requests.delete(url, headers=headers)
+            
+        return resp.json() if resp.text else None
+    except Exception as e:
+        print(f"[SUPABASE ERROR] {e}")
+        return None
+
+def add_command_to_queue(username, player_id, command, product_id):
+    """Añade comando a la tabla pending_commands en Supabase"""
+    data = {
+        'id': str(uuid_lib.uuid4())[:8],
+        'username': username,
+        'player_id': player_id,
+        'command': command,
+        'product_id': product_id,
+        'status': 'pending',
+        'created_at': datetime.now().isoformat()
+    }
+    supabase_request('POST', 'pending_commands', data)
+    print(f"[QUEUE] Comando guardado en DB: {data['id']}")
+    return data['id']
+
+def get_pending_commands_from_db():
+    """Obtiene comandos pendientes de la DB"""
+    # select=*&status=eq.pending
+    params = {'select': '*', 'status': 'eq.pending'}
+    return supabase_request('GET', 'pending_commands', params) or []
+
+def mark_command_as_executed(command_id):
+    """Marca un comando como ejecutado o lo borra"""
+    # Opción A: Borrarlo (para no llenar la DB)
+    params = {'id': f'eq.{command_id}'}
+    # supabase_request('DELETE', f'pending_commands?id=eq.{command_id}')
+    
+    # Opción B: Marcarlo como executed
+    supabase_request('PATCH', f'pending_commands?id=eq.{command_id}', {'status': 'executed'})
+
+def create_ticket(session_id, username, product_id, status, amount):
+    """Crea ticket en Supabase"""
+    data = {
+        'id': f'TKT-{session_id[:8].upper()}',
+        'username': username,
+        'productId': product_id,
+        'status': status,
+        'total': amount/100,
+        'stripeSessionId': session_id,
+        'createdAt': datetime.now().isoformat()
+    }
+    supabase_request('POST', 'tickets', data)
 
 def get_minecraft_uuid(username):
     """Obtiene el UUID de Mojang"""
@@ -52,43 +123,6 @@ def get_minecraft_uuid(username):
     except:
         pass
     return None
-
-def add_command_to_queue(username, player_id, command, product_id):
-    """Añade comando a la cola"""
-    import uuid as uuid_lib
-    entry = {
-        'id': str(uuid_lib.uuid4())[:8],
-        'username': username,
-        'player_id': player_id,
-        'command': command,
-        'product_id': product_id,
-        'created_at': datetime.now().isoformat()
-    }
-    pending_commands.append(entry)
-    print(f"[QUEUE] Añadido: {entry['id']} - {command}")
-    return entry['id']
-
-def create_ticket(session_id, username, product_id, status, amount):
-    """Crea ticket en Supabase"""
-    if not SUPABASE_URL or not SUPABASE_KEY:
-        return
-    try:
-        headers = {
-            'apikey': SUPABASE_KEY,
-            'Authorization': f'Bearer {SUPABASE_KEY}',
-            'Content-Type': 'application/json'
-        }
-        data = {
-            'id': f'TKT-{session_id[:8].upper()}',
-            'username': username,
-            'productId': product_id,
-            'status': status,
-            'total': amount/100,
-            'createdAt': datetime.now().isoformat()
-        }
-        requests.post(f'{SUPABASE_URL}/rest/v1/tickets', headers=headers, json=data)
-    except Exception as e:
-        print(f"[TICKET] Error: {e}")
 
 # ============================================
 # RUTAS WEB
@@ -170,7 +204,10 @@ def get_pending():
     """El plugin consulta esto para obtener comandos"""
     if request.headers.get('X-Plugin-Secret') != PLUGIN_SECRET_KEY:
         return jsonify(error='Unauthorized'), 401
-    return jsonify(success=True, commands=list(pending_commands))
+    
+    # Leer desde la DB en lugar de memoria
+    commands = get_pending_commands_from_db() or []
+    return jsonify(success=True, commands=commands)
 
 @app.route('/api/plugin/confirm', methods=['POST'])
 def confirm_command():
@@ -178,9 +215,10 @@ def confirm_command():
     if request.headers.get('X-Plugin-Secret') != PLUGIN_SECRET_KEY:
         return jsonify(error='Unauthorized'), 401
     
-    global pending_commands
     cmd_id = request.json.get('command_id')
-    pending_commands = [c for c in pending_commands if c['id'] != cmd_id]
+    if cmd_id:
+        mark_command_as_executed(cmd_id)
+        
     return jsonify(success=True)
 
 # ============================================
