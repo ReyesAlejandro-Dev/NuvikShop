@@ -1,0 +1,15 @@
+# ============================================
+# NUVIKSHOP - Configuración del Plugin
+# ============================================
+
+# URL de tu servidor web
+api-url: "http://localhost:4242"
+
+# Clave secreta (debe coincidir con la del backend)
+secret-key: "cambia-esta-clave"
+
+# Cada cuántos segundos verificar compras
+check-interval-seconds: 10
+
+# Debug (mostrar más logs)
+debug: false

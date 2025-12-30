@@ -1,0 +1,16 @@
+{% extends "index.html" %}
+
+{% block content %}
+<main class="result-container">
+    <div class="card" style="max-width: 500px; margin: 40px auto; padding: 60px 40px;">
+        <i class="fa-solid fa-circle-check status-icon success-color"></i>
+        <h1>¡Pago Exitoso!</h1>
+        <p style="color: var(--secondary); margin-bottom: 32px;">
+            Gracias por tu compra. Tu producto se entregará automáticamente en el servidor en unos instantes.
+        </p>
+        <a href="{{ url_for('shop') }}" class="btn btn-primary">
+            Volver a la Tienda
+        </a>
+    </div>
+</main>
+{% endblock %}

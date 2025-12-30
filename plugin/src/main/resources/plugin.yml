@@ -1,0 +1,9 @@
+name: NuvikShop
+version: 1.0.0
+main: com.nuvikshop.NuvikShop
+api-version: '1.20'
+author: Nuvik
+description: Sistema de compras para tu servidor
+softdepend:
+  - LuckPerms
+  - Essentials

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ config.name }} - Tienda Oficial</title>
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛒</text></svg>">
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- Iconos (opcional) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="{{ url_for('index') }}" class="brand">
+                <i class="fa-solid fa-cube"></i> {{ config.name }}
+            </a>
+            <div class="nav-links">
+                <a href="{{ url_for('index') }}" class="active">Inicio</a>
+                <a href="{{ url_for('shop') }}">Tienda</a>
+                {% if config.discord_url %}
+                <a href="{{ config.discord_url }}" target="_blank">Discord</a>
+                {% endif %}
+            </div>
+            <a href="{{ url_for('shop') }}" class="btn btn-primary">
+                Ir a la Tienda <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    {% block content %}
+    <main class="hero">
+        <div class="container">
+            <h1>Potencia tu aventura en<br>{{ config.name }}</h1>
+            <p>Adquiere rangos, monedas y mejoras exclusivas para mejorar tu experiencia en el servidor.</p>
+
+            <div style="display: flex; gap: 16px; justify-content: center;">
+                <a href="{{ url_for('shop') }}" class="btn btn-accent">Ver Catálogo</a>
+                {% if config.discord_url %}
+                <a href="{{ config.discord_url }}" target="_blank" class="btn btn-outline">
+                    <i class="fa-brands fa-discord"></i> Unirse al Discord
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+    {% endblock %}
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 {{ config.name }}. Todos los derechos reservados.</p>
+            <p style="margin-top: 8px; font-size: 0.8rem; opacity: 0.5;">
+                Powered by <a href="https://github.com/llamagedon/nuvikshop" target="_blank"
+                    style="color: inherit;">NuvikShop</a>
+            </p>
+        </div>
+    </footer>
+
+</body>
+
+</html>
