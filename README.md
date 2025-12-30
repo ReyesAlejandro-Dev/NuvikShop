@@ -1,145 +1,158 @@
 # 🛒 NuvikShop
 
-> Tu propia tienda tipo Tebex - 100% Configurable y Open Source
+> Tu propia tienda para Minecraft estilo Tebex - **Gratis, Open Source y Sin Comisiones**
 
-![License](https://img.shields.io/badge/license-MIT-green)
-![Minecraft](https://img.shields.io/badge/Minecraft-1.20+-blue)
-![Python](https://img.shields.io/badge/Python-3.9+-yellow)
+![Python](https://img.shields.io/badge/Python-3.9+-yellow?style=flat-square&logo=python)
+![Minecraft](https://img.shields.io/badge/Minecraft-1.20+-blue?style=flat-square&logo=minecraft)
+![Stripe](https://img.shields.io/badge/Stripe-Pagos-635bff?style=flat-square&logo=stripe)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
-## ✨ ¿Qué es NuvikShop?
+**NuvikShop** es un sistema completo para vender rangos, monedas y objetos en tu servidor de Minecraft usando tu propia página web.
 
-NuvikShop es una **alternativa gratuita y open-source a Tebex/BuyCraft** que te permite tener tu propia tienda web para vender rangos, items, comandos y cualquier cosa en tu servidor de Minecraft.
+## ✨ ¿Por qué usar esto?
 
-### Ventajas
-
-- **0% comisiones** - Solo pagas Stripe (~2.9%)
-- **Control total** - El código es tuyo, modifícalo como quieras
-- **Sin límites** - Productos ilimitados
-- **Panel Admin** - Gestiona productos y ventas
-- **Múltiples monedas** - USD, EUR, MXN, etc.
-
-## 🏗️ Arquitectura
-
-```
-┌─────────────┐     ┌───────────┐     ┌─────────────┐
-│   TIENDA    │────▶│  STRIPE   │────▶│   FLASK     │
-│    WEB      │     │  (Pagos)  │     │  (Backend)  │
-└─────────────┘     └───────────┘     └──────┬──────┘
-                                              │
-┌─────────────┐     ┌───────────┐     ┌──────▼──────┐
-│  MINECRAFT  │◀────│  PLUGIN   │◀────│    COLA     │
-│  (Servidor) │     │ (Polling) │     │ (Comandos)  │
-└─────────────┘     └───────────┘     └─────────────┘
-```
-
-El plugin consulta la API cada X segundos buscando comandos pendientes y los ejecuta automáticamente.
-
-## 🚀 Instalación
-
-### Paso 1: Clonar repositorio
-
-```bash
-git clone https://github.com/tu-usuario/nuvikshop
-cd nuvikshop
-```
-
-### Paso 2: Configurar Backend
-
-```bash
-cd src
-pip install -r requirements.txt
-cp .env.example .env
-# Edita .env con tus claves
-python app.py
-```
-
-### Paso 3: Configurar Stripe
-
-1. Crea cuenta en [stripe.com](https://stripe.com)
-2. Ve a **Products** → **Add Product**
-3. Copia el `price_id` de cada producto
-4. Pégalos en `config.py`
-
-### Paso 4: Configurar Base de Datos
-
-1. Crea proyecto en [supabase.com](https://supabase.com)
-2. Crea las tablas (ver `db/schema.sql`)
-3. Copia URL y API Key a `.env`
-
-### Paso 5: Instalar Plugin
-
-```bash
-cd plugin
-mvn clean package
-# Copia target/NuvikShop-1.0.0.jar a plugins/
-```
-
-Configura `plugins/NuvikShop/config.yml`:
-```yaml
-api-url: "https://tu-dominio.com"
-secret-key: "tu-clave-secreta"
-check-interval-seconds: 10
-```
-
-## 📁 Estructura
-
-```
-nuvikshop/
-├── src/                        # Backend Flask
-│   ├── app.py                  # Servidor principal
-│   ├── config.py               # Configuración de productos
-│   ├── .env.example            # Variables de entorno
-│   ├── requirements.txt        # Dependencias Python
-│   ├── templates/              # Páginas HTML
-│   └── static/                 # CSS, JS, imágenes
-│
-├── plugin/                     # Plugin de Minecraft
-│   ├── pom.xml                 # Maven build
-│   └── src/main/
-│       ├── java/               # Código Java
-│       └── resources/          # plugin.yml, config.yml
-│
-└── db/                         # Base de datos
-    └── schema.sql              # Esquema de tablas
-```
-
-## ⚙️ Configuración
-
-### Añadir productos
-
-Edita `config.py`:
-
-```python
-PRODUCTS = {
-    'mi-rango': {
-        'price_id': 'price_xxx',  # De Stripe
-        'mode': 'payment',
-        'command': 'lp user {uuid} parent set mi-rango',
-    },
-}
-```
-
-### Comandos disponibles
-
-En los comandos puedes usar:
-- `{uuid}` - UUID del jugador
-- `{username}` - Nombre del jugador
-
-## 🔒 Seguridad
-
-- Las claves de API nunca se exponen al frontend
-- Los comandos se autentican con secret-key
-- Los pagos se verifican con Stripe
-
-## 📄 Licencia
-
-MIT License - Usa este código como quieras.
-
-## 💬 Soporte
-
-- Discord: [discord.gg/tu-servidor](https://discord.gg/tu-servidor)
-- Issues: Usa GitHub Issues
+| NuvikShop | Tebex / BuyCraft |
+|-----------|------------------|
+| ✅ **0% Comisiones** (tuyo es el 100%) | ❌ Comisiones altas |
+| ✅ **Control Total** del código | ❌ Sistema cerrado |
+| ✅ **Pagos Directos** a tu Stripe | ❌ Retención de fondos |
+| ✅ **Diseño Moderno** y responsive | ❌ Plantillas genéricas |
 
 ---
 
-⭐ **Si te gusta el proyecto, déjanos una estrella!** ⭐
+## 🚀 Guía de Instalación Paso a Paso
+
+Sigue estos pasos cuidadosamente. No necesitas ser experto en programación.
+
+### PREREQUISITOS
+- Una cuenta de **Stripe** (Gratis)
+- Una cuenta de **Supabase** (Gratis)
+- Python instalado en tu PC (para correr la web)
+- Java/Maven (para compilar el plugin)
+
+---
+
+### PASO 1: Configurar la Base de Datos (Supabase)
+
+1. Ve a [supabase.com](https://supabase.com) y crea una cuenta.
+2. Crea un **Nuevo Proyecto**.
+3. Ve a la sección **SQL Editor** (barra lateral izquierda).
+4. Crea una **Nueva Query**, pega el contenido del archivo `db/schema.sql` y dale a **RUN**.
+   - Esto creará las tablas necesarias (`products`, `tickets`).
+5. Ve a **Settings** (engranaje) -> **API**.
+6. Copia la `Project URL` y la `anon public key`. Las necesitarás luego.
+
+---
+
+### PASO 2: Configurar los Pagos (Stripe)
+
+1. Ve a [dashboard.stripe.com](https://dashboard.stripe.com).
+2. Clik en **Desarrolladores** -> **Claves de API**.
+3. Copia tu `Clave publicable` (`pk_live_...`) y `Clave secreta` (`sk_live_...`).
+4. Ve a **Productos** -> **Añadir producto**.
+5. Crea tus rangos (ej: VIP, MVP). Ponles precio y guárdalos.
+6. Al guardar, verás un **API ID** del precio (empieza por `price_...`). Copia esos IDs.
+
+---
+
+### PASO 3: Configurar la Página Web (Backend)
+
+1. Entra a la carpeta `src/`.
+2. Renombra el archivo `.env.example` a `.env` (sin .example).
+3. Abre `.env` con un editor de texto (Notepad, VS Code) y rellena tus datos:
+
+```ini
+# Tus claves de Stripe (Paso 2)
+STRIPE_SECRET_KEY=sk_live_xxxxxxxx...
+STRIPE_PUBLIC_KEY=pk_live_xxxxxxxx...
+
+# Tus claves de Supabase (Paso 1)
+SUPABASE_URL=https://tuproyecto.supabase.co
+SUPABASE_KEY=eyJxh...
+
+# Inventa una clave secreta para comunicar la web con el plugin
+PLUGIN_SECRET_KEY=mi-clave-secreta-super-segura
+```
+
+4. Abre `config.py` y configura tus productos:
+   - Reemplaza los `STRIPE_PRICE_ID_HERE` con los IDs que copiaste en el Paso 2.
+   - Configura los comandos que se ejecutarán en Minecraft.
+
+```python
+ PRODUCTS = {
+     'vip': {
+         'price_id': 'price_123456789', # Tu ID de Stripe
+         'mode': 'payment',
+         'command': 'lp user {uuid} parent set vip', # Comando para LuckPerms
+     },
+     ...
+ }
+```
+
+5. Instala las dependencias y corre la web:
+```bash
+cd src
+pip install -r requirements.txt
+python app.py
+```
+¡Tu web ya debería estar funcionando en `http://localhost:4242`! 🎉
+
+---
+
+### PASO 4: Instalar el Plugin en Minecraft
+
+1. Entra a la carpeta `plugin/`.
+2. Compila el plugin usando Maven (o usa un IDE como IntelliJ/Eclipse):
+```bash
+mvn clean package
+```
+3. Toma el archivo `.jar` generado en la carpeta `target/` y ponlo en la carpeta `plugins/` de tu servidor.
+4. Reinicia tu servidor.
+5. Ve a `plugins/NuvikShop/config.yml` y edítalo:
+
+```yaml
+# URL donde está alojada tu web (si es local, usa http://localhost:4242)
+api-url: "http://localhost:4242"
+
+# La misma clave que pusiste en el archivo .env
+secret-key: "mi-clave-secreta-super-segura"
+```
+
+6. Escribe `/nuvikshop reload` en la consola o reinicia.
+
+---
+
+## 🛠️ Personalización
+
+### Cambiar el logo y colores
+Edita `src/static/css/styles.css`. Al principio del archivo verás las variables de colores:
+```css
+:root {
+    --accent: #3b82f6; /* Color principal (azul) */
+    --bg-main: #09090b; /* Color de fondo */
+}
+```
+
+### Cambiar textos de la web
+Los textos principales están en `src/templates/index.html`. Puedes abrirlo y editar los títulos, descripciones y pies de página.
+
+### Añadir más productos
+Simplemente añade más entradas al diccionario `PRODUCTS` en `src/config.py`. No necesitas reiniciar la web, los cambios se aplican al recargar.
+
+---
+
+## ❓ Preguntas Frecuentes
+
+**¿Es seguro?**
+Sí. Las claves de Stripe y Supabase nunca se envían al navegador del usuario. Todo pasa por el servidor (backend).
+
+**¿Qué pasa si el servidor está apagado?**
+Si alguien compra mientras el servidor está off, la compra se guarda en la "cola". En cuanto el servidor prenda y el plugin conecte, se entregará el rango automáticamente.
+
+**¿Puedo usarlo en hosting compartido?**
+Sí, la parte web (src) la puedes subir a cualquier hosting Python (Render, Railway, Heroku, Vercel) y el plugin a tu host de Minecraft.
+
+---
+
+Hecho con ❤️ por **Nuvik**.
+Si te sirvió, ¡dale una ⭐ al repo!
